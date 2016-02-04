@@ -152,9 +152,7 @@ module Authorization
       }.merge(options)
       
       # Make sure we're handling all privileges as symbols.
-      privilege = privilege.is_a?( Array ) ?
-                  privilege.flatten.collect { |priv| priv.to_sym } :
-                  privilege.to_sym
+      privilege = privilege.is_a?( Array ) ? privilege.flatten.collect { |priv| priv.to_sym } : privilege.to_sym
       
       #
       # If the object responds to :proxy_reflection, we're probably working with
@@ -168,9 +166,7 @@ module Authorization
       end
       
       options[:context] ||= options[:object] && (
-        options[:object].class.respond_to?(:decl_auth_context) ?
-            options[:object].class.decl_auth_context :
-            options[:object].class.name.tableize.to_sym
+        options[:object].class.respond_to?(:decl_auth_context) ? options[:object].class.decl_auth_context : options[:object].class.name.tableize.to_sym
       ) rescue NoMethodError
       
       user, roles, privileges = user_roles_privleges_from_options(privilege, options)
