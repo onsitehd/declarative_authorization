@@ -14,8 +14,7 @@ module AuthorizationRulesHelper
     regexps.each do |name, res|
       res.each do |re|
         rules = rules.gsub(
-          re.is_a?(String) ? Regexp.new("(^|[^:])\\b(#{Regexp.escape(re)})\\b") :
-             (re.is_a?(Symbol) ? Regexp.new("()(:#{Regexp.escape(re.to_s)})\\b") : re), 
+          re.is_a?(String) ? Regexp.new("(^|[^:])\\b(#{Regexp.escape(re)})\\b") : (re.is_a?(Symbol) ? Regexp.new("()(:#{Regexp.escape(re.to_s)})\\b") : re), 
           "\\1<span class=\"#{name}\">\\2</span>")
       end
     end
@@ -79,9 +78,7 @@ module AuthorizationRulesHelper
   end
 
   def privilege_color (privilege, context, role)
-    has_changed(:add_privilege, privilege, context, role) ? '#00dd00' :
-        (has_changed(:remove_privilege, privilege, context, role) ? '#dd0000' :
-          role_color(role))
+    has_changed(:add_privilege, privilege, context, role) ? '#00dd00' : (has_changed(:remove_privilege, privilege, context, role) ? '#dd0000' : role_color(role))
   end
 
   def human_privilege (privilege)
@@ -148,10 +145,7 @@ module AuthorizationRulesHelper
   end
 
   def prohibit_link (step, text, title, options)
-    options[:with_removal] ?
-          link_to_function("[x]", "prohibit_action('#{serialize_action(step)}', '#{text}')",
-                    :class => 'prohibit', :title => title) :
-          ''
+    options[:with_removal] ? link_to_function("[x]", "prohibit_action('#{serialize_action(step)}', '#{text}')", :class => 'prohibit', :title => title) : ''
   end
   
   def readable_step_info (info)

@@ -612,8 +612,7 @@ module Authorization
       end
       def self.relevant_roles (approach)
         (AnalyzerEngine.relevant_roles(approach.engine, approach.users) +
-            (approach.engine.roles.include?(:new_role_for_change_analyzer) ?
-               [AnalyzerEngine::Role.for_sym(:new_role_for_change_analyzer, approach.engine)] : [])).uniq
+            (approach.engine.roles.include?(:new_role_for_change_analyzer) ? [AnalyzerEngine::Role.for_sym(:new_role_for_change_analyzer, approach.engine)] : [])).uniq
       end
     end
   end
