@@ -306,8 +306,8 @@ module Authorization
         actions = args.flatten
 
         # prevent setting filter_access_filter multiple times
-        skip_before_filter :filter_access_filter, raise: false
-        before_filter :filter_access_filter
+        skip_before_action :filter_access_filter, raise: false
+        before_action :filter_access_filter
 
         filter_access_permissions.each do |perm|
           perm.remove_actions(actions)
@@ -509,7 +509,7 @@ module Authorization
         unless options[:nested_in].blank?
           load_parent_method = :"load_#{options[:nested_in].to_s.singularize}"
           shallow_exceptions = options[:shallow] ? {:except => members.keys} : {}
-          before_filter shallow_exceptions do |controller|
+          before_action shallow_exceptions do |controller|
             if controller.respond_to?(load_parent_method, true)
               controller.send(load_parent_method)
             else
@@ -518,7 +518,7 @@ module Authorization
           end
 
           new_for_collection_method = :"new_#{controller_name.singularize}_for_collection"
-          before_filter :only => collections.keys do |controller|
+          before_action only: collections.keys do |controller|
             # new_for_collection
             if controller.respond_to?(new_for_collection_method, true)
               controller.send(new_for_collection_method)
@@ -531,7 +531,7 @@ module Authorization
 
         unless options[:strong_parameters]
           new_from_params_method = :"new_#{controller_name.singularize}_from_params"
-          before_filter :only => new_actions.keys do |controller|
+          before_action only: new_actions.keys do |controller|
             # new_from_params
             if controller.respond_to?(new_from_params_method, true)
               controller.send(new_from_params_method)
@@ -542,7 +542,7 @@ module Authorization
           end
         else
           new_object_method = :"new_#{controller_name.singularize}"
-          before_filter :only => :new do |controller|
+          before_action only: :new do |controller|
             # new_from_params
             if controller.respond_to?(new_object_method, true)
               controller.send(new_object_method)
@@ -554,7 +554,7 @@ module Authorization
         end
 
         load_method = :"load_#{controller_name.singularize}"
-        before_filter :only => members.keys do |controller|
+        before_action only: members.keys do |controller|
           # load controller object
           if controller.respond_to?(load_method, true)
             controller.send(load_method)
