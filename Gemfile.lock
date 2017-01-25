@@ -1,0 +1,25 @@
+PATH
+  remote: .
+  specs:
+    declarative_authorization (1.0.0.pre)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    power_assert (0.4.1)
+    ruby_parser (3.6.6)
+      sexp_processor (~> 4.1)
+    sexp_processor (4.7.0)
+    test-unit (3.2.3)
+      power_assert
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  declarative_authorization!
+  ruby_parser (~> 3.6.0)
+  test-unit
+
+BUNDLED WITH
+   1.13.6
