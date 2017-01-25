@@ -47,8 +47,12 @@ module Authorization
       @finder_options = {}
       if Rails.version < "3"
         super(model, options)
+      elsif Rails.version < "5"
+        super(model, model.table_name)
       else
-	      super(model, model.table_name)
+        table_metadata = ActiveRecord::TableMetadata.new(model, model.arel_table)
+        predicate_builder = ActiveRecord::PredicateBuilder.new(table_metadata)
+        super(model, model.table_name, predicate_builder)
       end
     end
 
