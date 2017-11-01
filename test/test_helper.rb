@@ -18,7 +18,6 @@ RAILS_ROOT = File.dirname(__FILE__)
 
 DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 
-require DA_ROOT + File.join(%w{lib declarative_authorization rails_legacy})
 require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
 require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
@@ -109,11 +108,7 @@ class TestApp
     config.eager_load = false
     config.active_support.deprecation = :stderr
     database_path = File.expand_path('../database.yml', __FILE__)
-    if Rails.version.start_with? '3.0.'
-      config.paths.config.database database_path
-    else
-      config.paths['config/database'] = database_path
-    end
+    config.paths['config/database'] = database_path
     initialize!
   end
 end
