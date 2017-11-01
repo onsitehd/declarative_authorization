@@ -23,9 +23,8 @@ class AuthorizationRulesController < ApplicationController
   end
 
   def graph
-    if params[:format] == "svg"
-      render :text => dot_to_svg(auth_to_dot(graph_options)),
-          :content_type => "image/svg+xml"
+    if params[:format] == 'svg'
+      render plain: dot_to_svg(auth_to_dot(graph_options)), :content_type => "image/svg+xml"
     end
   end
 

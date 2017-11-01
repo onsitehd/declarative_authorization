@@ -25,7 +25,7 @@ end
 class BasicControllerTest < ActionController::TestCase
   tests SpecificMocksController
   
-  def test_filter_access_to_receiving_an_explicit_array
+  def test_action_access_to_receiving_an_explicit_array
     reader = Authorization::Reader::DSLReader.new
 
     reader.parse %{
@@ -44,9 +44,7 @@ class BasicControllerTest < ActionController::TestCase
     assert !@controller.authorized?
   end
   
-  def test_filter_access
-    assert !@controller.class.before_filters.empty?
-    
+  def test_action_access
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -71,7 +69,7 @@ class BasicControllerTest < ActionController::TestCase
     assert @controller.authorized?
   end
   
-  def test_filter_access_multi_actions
+  def test_action_access_multi_actions
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -84,7 +82,7 @@ class BasicControllerTest < ActionController::TestCase
     assert @controller.authorized?
   end
   
-  def test_filter_access_unprotected_actions
+  def test_action_access_unprotected_actions
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -96,7 +94,7 @@ class BasicControllerTest < ActionController::TestCase
     assert @controller.authorized?
   end
 
-  def test_filter_access_priv_hierarchy
+  def test_action_access_priv_hierarchy
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       privileges do
@@ -114,7 +112,7 @@ class BasicControllerTest < ActionController::TestCase
     assert @controller.authorized?
   end
   
-  def test_filter_access_skip_attribute_test
+  def test_action_access_skip_attribute_test
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -173,7 +171,7 @@ class AllMocksController < MocksController
 end
 class AllActionsControllerTest < ActionController::TestCase
   tests AllMocksController
-  def test_filter_access_all
+  def test_action_access_all
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -198,7 +196,7 @@ end
 
 ##################
 class LoadMockObjectsController < MocksController
-  before_filter { @@load_method_call_count = 0 }
+  before_action { @@load_method_call_count = 0 }
   filter_access_to :show, :attribute_check => true, :model => LoadMockObject
   filter_access_to :edit, :attribute_check => true
   filter_access_to :update, :delete, :attribute_check => true,
@@ -224,7 +222,7 @@ end
 class LoadObjectControllerTest < ActionController::TestCase
   tests LoadMockObjectsController
   
-  def test_filter_access_with_object_load
+  def test_action_access_with_object_load
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -250,7 +248,7 @@ class LoadObjectControllerTest < ActionController::TestCase
     assert @controller.instance_variable_defined?(:@load_mock_object)
   end
 
-  def test_filter_access_object_load_without_param
+  def test_action_access_object_load_without_param
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -267,14 +265,14 @@ class LoadObjectControllerTest < ActionController::TestCase
     end
     
     Authorization::AuthorizationInController.failed_auto_loading_is_not_found = false
-    assert_nothing_raised "Load error is only logged" do
+    assert_nothing_raised do
       request!(MockUser.new(:test_role), "show", reader)
     end
     assert !@controller.authorized?
     Authorization::AuthorizationInController.failed_auto_loading_is_not_found = true
   end
   
-  def test_filter_access_with_object_load_custom
+  def test_action_access_with_object_load_custom
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -307,7 +305,7 @@ class LoadObjectControllerTest < ActionController::TestCase
     assert @controller.authorized?
   end
   
-  def test_filter_access_custom
+  def test_action_access_custom
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -337,7 +335,7 @@ class AccessOverwritesController < MocksController
   define_action_methods :test_action, :test_action_2
 end
 class AccessOverwritesControllerTest < ActionController::TestCase
-  def test_filter_access_overwrite
+  def test_action_access_overwrite
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do
@@ -363,7 +361,7 @@ end
 class PluralizationControllerTest < ActionController::TestCase
   tests PeopleController
   
-  def test_filter_access_people_controller
+  def test_action_access_people_controller
     reader = Authorization::Reader::DSLReader.new
     reader.parse %{
       authorization do

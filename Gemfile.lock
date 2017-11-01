@@ -6,20 +6,68 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    actionpack (5.1.4)
+      actionview (= 5.1.4)
+      activesupport (= 5.1.4)
+      rack (~> 2.0)
+      rack-test (>= 0.6.3)
+      rails-dom-testing (~> 2.0)
+      rails-html-sanitizer (~> 1.0, >= 1.0.2)
+    actionview (5.1.4)
+      activesupport (= 5.1.4)
+      builder (~> 3.1)
+      erubi (~> 1.4)
+      rails-dom-testing (~> 2.0)
+      rails-html-sanitizer (~> 1.0, >= 1.0.3)
+    activesupport (5.1.4)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      i18n (~> 0.7)
+      minitest (~> 5.1)
+      tzinfo (~> 1.1)
+    builder (3.2.3)
+    concurrent-ruby (1.0.5)
+    crass (1.0.2)
+    erubi (1.7.0)
+    i18n (0.8.6)
+    loofah (2.1.1)
+      crass (~> 1.0.2)
+      nokogiri (>= 1.5.9)
+    mini_portile2 (2.3.0)
+    minitest (5.10.3)
+    nokogiri (1.8.1)
+      mini_portile2 (~> 2.3.0)
     power_assert (0.4.1)
+    rack (2.0.3)
+    rack-test (0.7.0)
+      rack (>= 1.0, < 3)
+    rails-controller-testing (1.0.1)
+      actionpack (~> 5.x)
+      actionview (~> 5.x)
+      activesupport (~> 5.x)
+    rails-dom-testing (2.0.3)
+      activesupport (>= 4.2.0)
+      nokogiri (>= 1.6)
+    rails-html-sanitizer (1.0.3)
+      loofah (~> 2.0)
+    rake (12.1.0)
     ruby_parser (3.6.6)
       sexp_processor (~> 4.1)
     sexp_processor (4.7.0)
     test-unit (3.2.3)
       power_assert
+    thread_safe (0.3.6)
+    tzinfo (1.2.3)
+      thread_safe (~> 0.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   declarative_authorization!
+  rails-controller-testing
+  rake
   ruby_parser (~> 3.6.0)
   test-unit
 
 BUNDLED WITH
-   1.13.6
+   1.15.4

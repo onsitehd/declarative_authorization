@@ -21,7 +21,7 @@ Plugin features
   * Authorize CRUD (Create, Read, Update, Delete) activities
   * Query rewriting to automatically only fetch authorized records
 * DSL for specifying Authorization rules in an authorization configuration
-* Support for Rails 4, with backwards compatibility through Rails 2
+* Support for Rails 5
 
 
 Requirements
