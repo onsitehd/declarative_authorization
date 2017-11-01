@@ -1,5 +1,5 @@
 module AuthorizationRulesHelper
-  def syntax_highlight (rules)
+  def syntax_highlight(rules)
     regexps = {
       :constant => [/(:)(\w+)/], 
       :proc => ['role', 'authorization', 'privileges'],
@@ -21,7 +21,7 @@ module AuthorizationRulesHelper
     rules
   end
 
-  def policy_analysis_hints (marked_up, policy_data)
+  def policy_analysis_hints(marked_up, policy_data)
     analyzer = Authorization::DevelopmentSupport::Analyzer.new(controller.authorization_engine)
     analyzer.analyze(policy_data)
     marked_up_by_line = marked_up.split("\n")
@@ -38,7 +38,7 @@ module AuthorizationRulesHelper
     (marked_up_by_line * "\n").html_safe
   end
 
-  def link_to_graph (title, options = {})
+  def link_to_graph(title, options = {})
     type = options[:type] || ''
     link_to_function title, "$$('object')[0].data = '#{url_for :action => 'index', :format => 'svg', :type => type}'"
   end
@@ -52,7 +52,7 @@ module AuthorizationRulesHelper
   #  link_to("XACML export", :action => 'index', :format => 'xacml')
   end
   
-  def role_color (role, fill = false)
+  def role_color(role, fill = false)
     if @has_changes
       if has_changed(:add_role, role)
         fill ? '#ddffdd' : '#000000'
@@ -73,15 +73,15 @@ module AuthorizationRulesHelper
     end
   end
   
-  def role_fill_color (role)
+  def role_fill_color(role)
     role_color(role, true)
   end
 
-  def privilege_color (privilege, context, role)
+  def privilege_color(privilege, context, role)
     has_changed(:add_privilege, privilege, context, role) ? '#00dd00' : (has_changed(:remove_privilege, privilege, context, role) ? '#dd0000' : role_color(role))
   end
 
-  def human_privilege (privilege)
+  def human_privilege(privilege)
     begin
       I18n.t(privilege, :scope => [:declarative_authorization, :privilege], :raise => true)
     rescue
@@ -89,7 +89,7 @@ module AuthorizationRulesHelper
     end
   end
 
-  def human_context (context)
+  def human_context(context)
     begin
       context.to_s.classify.constantize.human_name
     rescue
@@ -97,7 +97,7 @@ module AuthorizationRulesHelper
     end
   end
 
-  def human_privilege_context (privilege, context)
+  def human_privilege_context(privilege, context)
     human = [human_privilege(privilege), human_context(context)]
     begin
       unless I18n.t(:verb_in_front_of_object, :scope => :declarative_authorization, :raise => true)
@@ -108,11 +108,11 @@ module AuthorizationRulesHelper
     human * " "
   end
 
-  def human_role (role)
+  def human_role(role)
     Authorization::Engine.instance.title_for(role) or role.to_s
   end
 
-  def describe_step (step, options = {})
+  def describe_step(step, options = {})
     options = {:with_removal => false}.merge(options)
 
     case step[0]
@@ -144,11 +144,11 @@ module AuthorizationRulesHelper
                         "Don't suggest this action.", options)
   end
 
-  def prohibit_link (step, text, title, options)
+  def prohibit_link(step, text, title, options)
     options[:with_removal] ? link_to_function("[x]", "prohibit_action('#{serialize_action(step)}', '#{text}')", :class => 'prohibit', :title => title) : ''
   end
   
-  def readable_step_info (info)
+  def readable_step_info(info)
     case info
     when Symbol   then info.inspect
     when User     then info.login
@@ -156,29 +156,29 @@ module AuthorizationRulesHelper
     end
   end
 
-  def serialize_changes (approach)
+  def serialize_changes(approach)
     changes = approach.changes.collect {|step| step.to_a.first.is_a?(Enumerable) ? step.to_a : [step.to_a]}
     changes.collect {|multi_step| multi_step.collect {|step| serialize_action(step) }}.flatten * ';'
   end
 
-  def serialize_action (step)
+  def serialize_action(step)
     step.collect {|info| readable_step_info(info) } * ','
   end
 
-  def serialize_relevant_roles (approach)
+  def serialize_relevant_roles(approach)
     {:filter_roles => (Authorization::DevelopmentSupport::AnalyzerEngine.relevant_roles(approach.engine, approach.users).
         map(&:to_sym) + [:new_role_for_change_analyzer]).uniq}.to_param
   end
 
-  def has_changed (*args)
+  def has_changed(*args)
     @changes && @changes[args[0]] && @changes[args[0]].include?(args[1..-1])
   end
 
-  def affected_users_count (approach)
+  def affected_users_count(approach)
     @affected_users[approach]
   end
 
-  def auth_usage_info_classes (auth_info)
+  def auth_usage_info_classes(auth_info)
     classes = []
     if auth_info[:controller_permissions]
       if auth_info[:controller_permissions][0]
@@ -193,7 +193,7 @@ module AuthorizationRulesHelper
     classes * " "
   end
 
-  def auth_usage_info_title (auth_info)
+  def auth_usage_info_title(auth_info)
     titles = []
     if auth_usage_info_classes(auth_info) =~ /unprotected/
       titles << "No filter_access_to call protects this action"

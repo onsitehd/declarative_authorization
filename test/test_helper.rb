@@ -24,10 +24,11 @@ require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
 require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
 
 class MockDataObject
-  def initialize (attrs = {})
+  def initialize(attrs = {})
     attrs.each do |key, value|
       instance_variable_set(:"@#{key}", value)
       self.class.class_eval do
+        next if method_defined?(key)
         attr_reader key
       end
     end
@@ -57,12 +58,12 @@ class MockDataObject
 end
 
 class MockUser < MockDataObject
-  def initialize (*roles)
+  def initialize(*roles)
     options = roles.last.is_a?(::Hash) ? roles.pop : {}
     super({:role_symbols => roles, :login => hash}.merge(options))
   end
 
-  def initialize_copy (other)
+  def initialize_copy(other)
     @role_symbols = @role_symbols.clone
   end
 end
@@ -75,7 +76,7 @@ class MocksController < ActionController::Base
     !!@authorized
   end
   
-  def self.define_action_methods (*methods)
+  def self.define_action_methods(*methods)
     methods.each do |method|
       define_method method do
         @authorized = true
@@ -88,7 +89,7 @@ class MocksController < ActionController::Base
     define_action_methods :index, :show, :edit, :update, :new, :create, :destroy
   end
   
-  def logger (*args)
+  def logger(*args)
     Class.new do 
       def warn(*args)
         #p args
