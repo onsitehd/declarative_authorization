@@ -3,9 +3,7 @@ require File.dirname(__FILE__) + '/authorization.rb'
 require File.dirname(__FILE__) + '/obligation_scope.rb'
 
 module Authorization
-  
   module AuthorizationInModel
-
     # If the user meets the given privilege, permitted_to? returns true
     # and yields to the optional block.
     def permitted_to?(privilege, options = {}, &block)
@@ -13,40 +11,34 @@ module Authorization
         :user =>  Authorization.current_user,
         :object => self
       }.merge(options)
-      Authorization::Engine.instance.permit?(privilege,
-          {:user => options[:user],
-           :object => options[:object]},
-          &block)
+      Authorization::Engine.instance.permit?(privilege, { :user => options[:user], :object => options[:object] }, &block)
     end
 
     # Works similar to the permitted_to? method, but doesn't accept a block
     # and throws the authorization exceptions, just like Engine#permit!
-    def permitted_to!(privilege, options = {} )
+    def permitted_to!(privilege, options = {})
       options = {
         :user =>  Authorization.current_user,
         :object => self
       }.merge(options)
-      Authorization::Engine.instance.permit!(privilege,
-          {:user => options[:user],
-           :object => options[:object]})
+      Authorization::Engine.instance.permit!(privilege, :user => options[:user], :object => options[:object])
     end
-    
+
     def self.included(base) # :nodoc:
-      #base.extend(ClassMethods)
       base.module_eval do
         # Builds and returns a scope with joins and conditions satisfying all obligations.
-        def self.obligation_scope_for( privileges, options = {} )
+        def self.obligation_scope_for(privileges, options = {})
           options = {
             :user => Authorization.current_user,
             :context => nil,
             :model => self,
-            :engine => nil,
+            :engine => nil
           }.merge(options)
           engine = options[:engine] || Authorization::Engine.instance
 
-          obligation_scope = ObligationScope.new( options[:model], {} )
-          engine.obligations( privileges, :user => options[:user], :context => options[:context] ).each do |obligation|
-            obligation_scope.parse!( obligation )
+          obligation_scope = ObligationScope.new(options[:model], {})
+          engine.obligations(privileges, :user => options[:user], :context => options[:context]).each do |obligation|
+            obligation_scope.parse!(obligation)
           end
 
           obligation_scope.scope
@@ -54,14 +46,14 @@ module Authorization
 
         # Named scope for limiting query results according to the authorization
         # of the current user.  If no privilege is given, :+read+ is assumed.
-        # 
+        #
         #   User.with_permissions_to
         #   User.with_permissions_to(:update)
         #   User.with_permissions_to(:update, :context => :users)
-        #   
+        #
         # As in the case of other named scopes, this one may be chained:
         #   User.with_permission_to.find(:all, :conditions...)
-        # 
+        #
         # Options
         # [:+context+]
         #   Context for the privilege to be evaluated in; defaults to the
@@ -75,42 +67,50 @@ module Authorization
           privilege = (args[0] || :read).to_sym
           privileges = [privilege]
           parent_scope = where(nil)
-          context =
-              if options[:context]
-                options[:context]
-              elsif parent_scope.klass.respond_to?(:decl_auth_context)
-                parent_scope.klass.decl_auth_context
-              else
-                parent_scope.klass.name.tableize.to_sym
-              end
+          context = if options[:context]
+                      options[:context]
+                    elsif parent_scope.klass.respond_to?(:decl_auth_context)
+                      parent_scope.klass.decl_auth_context
+                    else
+                      parent_scope.klass.name.tableize.to_sym
+                    end
 
           user = options[:user] || Authorization.current_user
 
           engine = options[:engine] || Authorization::Engine.instance
-          engine.permit!(privileges, :user => user, :skip_attribute_test => true,
-                          :context => context)
+          engine.permit!(
+            privileges,
+            :user => user,
+            :skip_attribute_test => true,
+            :context => context
+          )
 
-          obligation_scope_for( privileges, :user => user,
-              :context => context, :engine => engine, :model => parent_scope.klass)
+          obligation_scope_for(
+            privileges,
+            :user => user,
+            :context => context,
+            :engine => engine,
+            :model => parent_scope.klass
+          )
         end
-        
+
         # Activates model security for the current model.  Then, CRUD operations
         # are checked against the authorization of the current user.  The
         # privileges are :+create+, :+read+, :+update+ and :+delete+ in the
         # context of the model.  By default, :+read+ is not checked because of
         # performance impacts, especially with large result sets.
-        # 
+        #
         #   class User < ActiveRecord::Base
         #     using_access_control
         #   end
-        #   
+        #
         # If an operation is not permitted, a Authorization::AuthorizationError
         # is raised.
         #
         # To activate model security on all models, call using_access_control
         # on ActiveRecord::Base
         #   ActiveRecord::Base.using_access_control
-        # 
+        #
         # Available options
         # [:+context+] Specify context different from the models table name.
         # [:+include_read+] Also check for :+read+ privilege after find.
@@ -124,16 +124,22 @@ module Authorization
           class_eval do
             [:create, :update, [:destroy, :delete]].each do |action, privilege|
               send(:"before_#{action}") do |object|
-                Authorization::Engine.instance.permit!(privilege || action,
-                  :object => object, :context => options[:context])
+                Authorization::Engine.instance.permit!(
+                  privilege || action,
+                  :object => object,
+                  :context => options[:context]
+                )
               end
             end
-            
+
             if options[:include_read]
               # after_find is only called if after_find is implemented
               after_find do |object|
-                Authorization::Engine.instance.permit!(:read, :object => object,
-                  :context => options[:context])
+                Authorization::Engine.instance.permit!(
+                  :read,
+                  :object => object,
+                  :context => options[:context]
+                )
               end
             end
 

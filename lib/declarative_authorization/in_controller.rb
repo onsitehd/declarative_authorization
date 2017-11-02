@@ -3,7 +3,6 @@ require File.dirname(__FILE__) + '/authorization.rb'
 
 module Authorization
   module AuthorizationInController
-
     def self.included(base) # :nodoc:
       base.extend(ClassMethods)
       if base.respond_to?(:hide_action)
@@ -24,6 +23,7 @@ module Authorization
     def self.failed_auto_loading_is_not_found?
       @@failed_auto_loading_is_not_found
     end
+
     def self.failed_auto_loading_is_not_found=(new_value)
       @@failed_auto_loading_is_not_found = new_value
     end
@@ -67,18 +67,18 @@ module Authorization
       result = roles.all? do |role|
         user_roles.include?(role)
       end
-      yield if result and block_given?
+      yield if result && block_given?
       result
     end
 
     # Intended to be used where you want to allow users with any single listed role to view
     # the content in question
-    def has_any_role?(*roles,&block)
+    def has_any_role?(*roles, &block)
       user_roles = authorization_engine.roles_for(current_user)
       result = roles.any? do |role|
         user_roles.include?(role)
       end
-      yield if result and block_given?
+      yield if result && block_given?
       result
     end
 
@@ -88,7 +88,7 @@ module Authorization
       result = roles.all? do |role|
         user_roles.include?(role)
       end
-      yield if result and block_given?
+      yield if result && block_given?
       result
     end
 
@@ -98,22 +98,23 @@ module Authorization
       result = roles.any? do |role|
         user_roles.include?(role)
       end
-      yield if result and block_given?
+      yield if result && block_given?
       result
     end
 
     protected
+
     def filter_access_filter # :nodoc:
       permissions = self.class.all_filter_access_permissions
-      all_permissions = permissions.select {|p| p.actions.include?(:all)}
-      matching_permissions = permissions.select {|p| p.matches?(action_name)}
+      all_permissions = permissions.select { |p| p.actions.include?(:all) }
+      matching_permissions = permissions.select { |p| p.matches?(action_name) }
       allowed = false
       auth_exception = nil
       begin
         allowed = if !matching_permissions.empty?
-                    matching_permissions.all? {|perm| perm.permit!(self)}
+                    matching_permissions.all? { |perm| perm.permit!(self) }
                   elsif !all_permissions.empty?
-                    all_permissions.all? {|perm| perm.permit!(self)}
+                    all_permissions.all? { |perm| perm.permit!(self) }
                   else
                     !DEFAULT_DENY
                   end
@@ -122,9 +123,11 @@ module Authorization
       end
 
       unless allowed
-        if all_permissions.empty? and matching_permissions.empty?
-          logger.warn "Permission denied: No matching filter access " +
+        if all_permissions.empty? && matching_permissions.empty?
+          logger.warn(
+            "Permission denied: No matching filter access " \
             "rule found for #{self.class.controller_name}.#{action_name}"
+          )
         elsif auth_exception
           logger.info "Permission denied: #{auth_exception}"
         end
@@ -132,8 +135,11 @@ module Authorization
           # permission_denied needs to render or redirect
           send(:permission_denied)
         else
-          send(:render, :plain => "You are not allowed to access this action.",
-            :status => :forbidden)
+          send(
+            :render,
+            :plain => "You are not allowed to access this action.",
+            :status => :forbidden
+          )
         end
       end
     end
@@ -153,8 +159,7 @@ module Authorization
     def new_controller_object_from_params(context_without_namespace, parent_context_without_namespace, strong_params) # :nodoc:
       model_or_proxy = parent_context_without_namespace ? instance_variable_get(:"@#{parent_context_without_namespace.to_s.singularize}").send(context_without_namespace.to_sym) : context_without_namespace.to_s.classify.constantize
       instance_var = :"@#{context_without_namespace.to_s.singularize}"
-      instance_variable_set(instance_var,
-        model_or_proxy.new(params[context_without_namespace.to_s.singularize]))
+      instance_variable_set(instance_var, model_or_proxy.new(params[context_without_namespace.to_s.singularize]))
     end
 
     def new_blank_controller_object(context_without_namespace, parent_context_without_namespace, strong_params, model) # :nodoc:
@@ -164,8 +169,7 @@ module Authorization
         model_or_proxy = parent_context_without_namespace ? instance_variable_get(:"@#{parent_context_without_namespace.to_s.singularize}").send(context_without_namespace.to_sym) : context_without_namespace.to_s.classify.constantize
       end
       instance_var = :"@#{context_without_namespace.to_s.singularize}"
-      instance_variable_set(instance_var,
-        model_or_proxy.new())
+      instance_variable_set(instance_var, model_or_proxy.new)
     end
 
     def new_controller_object_for_collection(context_without_namespace, parent_context_without_namespace, strong_params) # :nodoc:
@@ -178,16 +182,18 @@ module Authorization
       context = object = nil
       if object_or_sym.nil?
         context = self.class.decl_auth_context
-      elsif !Authorization.is_a_association_proxy?(object_or_sym) and object_or_sym.is_a?(Symbol)
+      elsif !Authorization.is_a_association_proxy?(object_or_sym) && object_or_sym.is_a?(Symbol)
         context = object_or_sym
       else
         object = object_or_sym
       end
 
-      result = {:object => object,
+      result = {
+        :object => object,
         :context => context,
         :skip_attribute_test => object.nil?,
-        :bang => bang}.merge(options)
+        :bang => bang
+      }.merge(options)
       result[:user] = current_user unless result.key?(:user)
       result
     end
@@ -329,7 +335,7 @@ module Authorization
           if mod.respond_to?(:filter_access_permissions, true)
             perms +
               mod.filter_access_permissions.collect do |p1|
-                p1.clone.remove_actions(perms.inject(Set.new) {|actions, p2| actions + p2.actions})
+                p1.clone.remove_actions(perms.inject(Set.new) { |actions, p2| actions + p2.actions })
               end
           else
             perms
@@ -477,9 +483,9 @@ module Authorization
       #
       def filter_resource_access(options = {})
         options = {
-          :new        => [:new, :create],
+          :new => [:new, :create],
           :additional_new => nil,
-          :member     => [:show, :edit, :update, :destroy],
+          :member => [:show, :edit, :update, :destroy],
           :additional_member => nil,
           :collection => [:index],
           :additional_collection => nil,
@@ -487,19 +493,22 @@ module Authorization
           #:new_method => nil,                 # only symbol method name
           #:load_method => nil,                # only symbol method name
           :no_attribute_check => nil,
-          :context    => nil,
+          :context => nil,
           :model => nil,
-          :nested_in  => nil,
+          :nested_in => nil,
           :strong_parameters => nil
         }.merge(options)
-        options.merge!({ :strong_parameters => true }) if options[:strong_parameters] == nil
+        options.merge!(:strong_parameters => true) if options[:strong_parameters].nil?
 
-        new_actions = actions_from_option( options[:new] ).merge(
-            actions_from_option(options[:additional_new]) )
+        new_actions = actions_from_option(options[:new]).merge(
+          actions_from_option(options[:additional_new])
+        )
         members = actions_from_option(options[:member]).merge(
-            actions_from_option(options[:additional_member]))
+          actions_from_option(options[:additional_member])
+        )
         collections = actions_from_option(options[:collection]).merge(
-            actions_from_option(options[:additional_collection]))
+          actions_from_option(options[:additional_collection])
+        )
 
         no_attribute_check_actions = options[:strong_parameters] ? collections.merge(actions_from_option([:create])) : collections
 
@@ -507,7 +516,7 @@ module Authorization
 
         unless options[:nested_in].blank?
           load_parent_method = :"load_#{options[:nested_in].to_s.singularize}"
-          shallow_exceptions = options[:shallow] ? {:except => members.keys} : {}
+          shallow_exceptions = options[:shallow] ? { :except => members.keys } : {}
           before_action shallow_exceptions do |controller|
             if controller.respond_to?(load_parent_method, true)
               controller.send(load_parent_method)
@@ -522,32 +531,29 @@ module Authorization
             if controller.respond_to?(new_for_collection_method, true)
               controller.send(new_for_collection_method)
             else
-              controller.send(:new_controller_object_for_collection,
-                  options[:context] || controller_name, options[:nested_in], options[:strong_parameters])
+              controller.send(:new_controller_object_for_collection, options[:context] || controller_name, options[:nested_in], options[:strong_parameters])
             end
           end
         end
 
-        unless options[:strong_parameters]
-          new_from_params_method = :"new_#{controller_name.singularize}_from_params"
-          before_action only: new_actions.keys do |controller|
-            # new_from_params
-            if controller.respond_to?(new_from_params_method, true)
-              controller.send(new_from_params_method)
-            else
-              controller.send(:new_controller_object_from_params,
-                  options[:context] || controller_name, options[:nested_in], options[:strong_parameters])
-            end
-          end
-        else
+        if options[:strong_parameters]
           new_object_method = :"new_#{controller_name.singularize}"
           before_action only: :new do |controller|
             # new_from_params
             if controller.respond_to?(new_object_method, true)
               controller.send(new_object_method)
             else
-              controller.send(:new_blank_controller_object,
-                  options[:context] || controller_name, options[:nested_in], options[:strong_parameters], options[:model])
+              controller.send(:new_blank_controller_object, options[:context] || controller_name, options[:nested_in], options[:strong_parameters], options[:model])
+            end
+          end
+        else
+          new_from_params_method = :"new_#{controller_name.singularize}_from_params"
+          before_action only: new_actions.keys do |controller|
+            # new_from_params
+            if controller.respond_to?(new_from_params_method, true)
+              controller.send(new_from_params_method)
+            else
+              controller.send(:new_controller_object_from_params, options[:context] || controller_name, options[:nested_in], options[:strong_parameters])
             end
           end
         end
@@ -564,11 +570,11 @@ module Authorization
         filter_access_to :all, :attribute_check => true, :context => options[:context], :model => options[:model]
 
         members.merge(new_actions).merge(collections).each do |action, privilege|
-          if action != privilege or (options[:no_attribute_check] and options[:no_attribute_check].include?(action))
+          if action != privilege || (options[:no_attribute_check] && options[:no_attribute_check].include?(action))
             filter_options = {
               :strong_parameters => options[:strong_parameters],
-              :context          => options[:context],
-              :attribute_check  => !options[:no_attribute_check] || !options[:no_attribute_check].include?(action),
+              :context => options[:context],
+              :attribute_check => !options[:no_attribute_check] || !options[:no_attribute_check].include?(action),
               :model => options[:model]
             }
             filter_options[:require] = privilege if action != privilege
@@ -584,13 +590,13 @@ module Authorization
       # E.g.
       #   AllThosePeopleController         => :all_those_people
       #   AnyName::Space::ThingsController => :any_name_space_things
-      #
       def decl_auth_context
         prefixes = name.split('::')[0..-2].map(&:underscore)
         ((prefixes + [controller_name]) * '_').to_sym
       end
 
       protected
+
       def filter_access_permissions # :nodoc:
         unless filter_access_permissions?
           ancestors[1..-1].reverse.each do |mod|
@@ -598,7 +604,7 @@ module Authorization
           end
         end
         class_variable_set(:@@declarative_authorization_permissions, {}) unless filter_access_permissions?
-        class_variable_get(:@@declarative_authorization_permissions)[self.name] ||= []
+        class_variable_get(:@@declarative_authorization_permissions)[name] ||= []
       end
 
       def filter_access_permissions? # :nodoc:
@@ -610,7 +616,7 @@ module Authorization
         when nil
           {}
         when Symbol, String
-          {option.to_sym => option.to_sym}
+          { option.to_sym => option.to_sym }
         when Hash
           option
         when Enumerable
@@ -629,9 +635,8 @@ module Authorization
 
   class ControllerPermission # :nodoc:
     attr_reader :actions, :privilege, :context, :attribute_check, :strong_params
-    def initialize(actions, privilege, context, strong_params, attribute_check = false,
-                    load_object_model = nil, load_object_method = nil,
-                    filter_block = nil)
+
+    def initialize(actions, privilege, context, strong_params, attribute_check = false, load_object_model = nil, load_object_method = nil, filter_block = nil)
       @actions = actions.to_set
       @privilege = privilege
       @context = context
@@ -647,17 +652,18 @@ module Authorization
     end
 
     def permit!(contr)
-      if @filter_block
-        return contr.instance_eval(&@filter_block)
-      end
+      return contr.instance_eval(&@filter_block) if @filter_block
+
       object = @attribute_check ? load_object(contr) : nil
       privilege = @privilege || :"#{contr.action_name}"
 
-      contr.authorization_engine.permit!(privilege,
-                                         :user => contr.send(:current_user),
-                                         :object => object,
-                                         :skip_attribute_test => !@attribute_check,
-                                         :context => @context || contr.class.decl_auth_context)
+      contr.authorization_engine.permit!(
+        privilege,
+        :user => contr.send(:current_user),
+        :object => object,
+        :skip_attribute_test => !@attribute_check,
+        :context => @context || contr.class.decl_auth_context
+      )
     end
 
     def remove_actions(actions)
@@ -668,13 +674,12 @@ module Authorization
     private
 
     def load_object(contr)
-      if @load_object_method and @load_object_method.is_a?(Symbol)
+      if @load_object_method && @load_object_method.is_a?(Symbol)
         contr.send(@load_object_method)
-      elsif @load_object_method and @load_object_method.is_a?(Proc)
+      elsif @load_object_method && @load_object_method.is_a?(Proc)
         contr.instance_eval(&@load_object_method)
       else
-        load_object_model = @load_object_model ||
-            (@context ? @context.to_s.classify.constantize : contr.class.controller_name.classify.constantize)
+        load_object_model = @load_object_model || (@context ? @context.to_s.classify.constantize : contr.class.controller_name.classify.constantize)
         load_object_model = load_object_model.classify.constantize if load_object_model.is_a?(String)
         instance_var = "@#{load_object_model.name.demodulize.underscore}"
         object = contr.instance_variable_defined?(instance_var) && contr.instance_variable_get(instance_var)
@@ -682,10 +687,12 @@ module Authorization
           begin
             object = @strong_params ? load_object_model.find_or_initialize_by(:id => contr.params[:id]) : load_object_model.find(contr.params[:id])
           rescue => e
-            contr.logger.debug("filter_access_to tried to find " +
-                "#{load_object_model} from params[:id] " +
-                "(#{contr.params[:id].inspect}), because attribute_check is enabled " +
-                "and #{instance_var.to_s} isn't set, but failed: #{e.class.name}: #{e}")
+            contr.logger.debug(
+              "filter_access_to tried to find " \
+              "#{load_object_model} from params[:id] " \
+              "(#{contr.params[:id].inspect}), because attribute_check is enabled " \
+              "and #{instance_var.to_s} isn't set, but failed: #{e.class.name}: #{e}"
+            )
             raise if AuthorizationInController.failed_auto_loading_is_not_found?
           end
           contr.instance_variable_set(instance_var, object)
@@ -695,4 +702,3 @@ module Authorization
     end
   end
 end
-

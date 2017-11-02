@@ -18,9 +18,9 @@ RAILS_ROOT = File.dirname(__FILE__)
 
 DA_ROOT = Pathname.new(File.expand_path("..", File.dirname(__FILE__)))
 
-require DA_ROOT + File.join(%w{lib declarative_authorization authorization})
-require DA_ROOT + File.join(%w{lib declarative_authorization in_controller})
-require DA_ROOT + File.join(%w{lib declarative_authorization maintenance})
+require DA_ROOT + File.join(%w[lib declarative_authorization authorization])
+require DA_ROOT + File.join(%w[lib declarative_authorization in_controller])
+require DA_ROOT + File.join(%w[lib declarative_authorization maintenance])
 
 class MockDataObject
   def initialize(attrs = {})
@@ -32,7 +32,7 @@ class MockDataObject
       end
     end
   end
-  
+
   def self.descends_from_active_record?
     true
   end
@@ -44,9 +44,9 @@ class MockDataObject
   def self.name
     "Mock"
   end
-  
+
   def self.find(*args)
-    raise StandardError, "Couldn't find #{self.name} with id #{args[0].inspect}" unless args[0]
+    raise StandardError, "Couldn't find #{name} with id #{args[0].inspect}" unless args[0]
     new :id => args[0]
   end
 
@@ -59,7 +59,7 @@ end
 class MockUser < MockDataObject
   def initialize(*roles)
     options = roles.last.is_a?(::Hash) ? roles.pop : {}
-    super({:role_symbols => roles, :login => hash}.merge(options))
+    super({ :role_symbols => roles, :login => hash }.merge(options))
   end
 
   def initialize_copy(other)
@@ -70,11 +70,11 @@ end
 class MocksController < ActionController::Base
   attr_accessor :current_user
   attr_writer :authorization_engine
-  
+
   def authorized?
     !!@authorized
   end
-  
+
   def self.define_action_methods(*methods)
     methods.each do |method|
       define_method method do
@@ -87,12 +87,11 @@ class MocksController < ActionController::Base
   def self.define_resource_actions
     define_action_methods :index, :show, :edit, :update, :new, :create, :destroy
   end
-  
+
   def logger(*args)
-    Class.new do 
-      def warn(*args)
-        #p args
-      end
+    Class.new do
+      def warn(*args); end
+
       alias_method :info, :warn
       alias_method :debug, :warn
       def warn?; end

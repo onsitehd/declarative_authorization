@@ -1,7 +1,6 @@
-require File.join(File.dirname(__FILE__), %w{development_support})
+require File.join(File.dirname(__FILE__), %w[development_support])
 
 module Authorization
-
   module DevelopmentSupport
     # Ideas for improvement
     # * Algorithm
@@ -37,9 +36,7 @@ module Authorization
     # * user.clone needs to clone role_symbols
     # * user.role_symbols needs to respond to <<
     # * user.login is needed
-    #
     class ChangeSupporter < AbstractAnalyzer
-
       # Returns a list of possible approaches for changes to the current
       # authorization rules that achieve a given goal.  The goal is given as
       # permission tests in the block.  The instance method +users+ is available
@@ -62,7 +59,7 @@ module Authorization
         end
 
         checked_candidates = 0
-        while !candidates.empty? and checked_candidates < 200
+        while !candidates.empty? && checked_candidates < 200
           checked_candidates += next_step(suggestions, candidates, approach_checker)
         end
 
@@ -74,7 +71,7 @@ module Authorization
       # Only groups directly adjacent approaches
       def group_approaches(approaches)
         approaches.each_with_object([]) do |approach, grouped|
-          if grouped.last and grouped.last.approach.similar_to(approach)
+          if grouped.last && grouped.last.approach.similar_to(approach)
             grouped.last.similar_approaches << approach
           else
             grouped << GroupedApproach.new(approach)
@@ -84,6 +81,7 @@ module Authorization
 
       class GroupedApproach
         attr_accessor :approach, :similar_approaches
+
         def initialize(approach)
           @approach = approach
           @similar_approaches = []
@@ -116,12 +114,14 @@ module Authorization
         def permit?(*args)
           @current_test_args = args
           @current_permit_result = @current_engine.permit?(
-              *(args[0...-1] + [args.last.merge(:skip_attribute_test => true)]))
+            *(args[0...-1] + [args.last.merge(:skip_attribute_test => true)])
+          )
         end
       end
 
       class Test
         attr_reader :positive, :privilege, :context, :user
+
         def initialize(positive, privilege, options = {})
           @positive, @privilege = positive, privilege
           @context = options[:context]
@@ -131,6 +131,7 @@ module Authorization
 
       class Approach
         attr_reader :steps, :engine, :users, :failed_tests
+
         def initialize(engine, users, steps)
           @engine, @users, @steps = engine, users, steps
         end
@@ -138,17 +139,22 @@ module Authorization
         def check(approach_checker)
           res = approach_checker.check(@engine, @users)
           @failed_tests = approach_checker.failed_tests
-          #puts "CHECKING #{inspect} (#{res}, #{sort_value})"
           res
         end
 
         def affected_users(original_engine, original_users, privilege, context)
-          (0...@users.length).select do |i|
-            original_engine.permit?(privilege, :context => context,
-              :skip_attribute_test => true, :user => original_users[i]) !=
-                @engine.permit?(privilege, :context => context,
-                  :skip_attribute_test => true, :user => @users[i])
-          end.collect {|i| original_users[i]}
+          (0...@users.length).reject { |i|
+            original_engine.permit?(
+              privilege,
+              :context => context,
+              :skip_attribute_test => true, :user => original_users[i]
+            ) == @engine.permit?(
+              privilege,
+              :context => context,
+              :skip_attribute_test => true,
+              :user => @users[i]
+            )
+          }.collect { |i| original_users[i] }
         end
 
         def initialize_copy(other)
@@ -178,7 +184,7 @@ module Authorization
         end
 
         def reverse_of_previous?(specific_action)
-          changes.any? {|step| step.reverse?(specific_action)}
+          changes.any? { |step| step.reverse?(specific_action) }
         end
 
         def apply(action)
@@ -189,17 +195,18 @@ module Authorization
 
         def subset?(other_approach)
           other_approach.changes.length >= changes.length &&
-              changes.all? {|step| other_approach.changes.any? {|step_2| step_2.eql?(step)} }
+            changes.all? { |step| other_approach.changes.any? { |step_2| step_2.eql?(step) } }
         end
 
         def state_hash
-          @state_hash ||= @engine.auth_rules.inject(0) do |memo, rule|
-              memo + rule.privileges.hash + rule.contexts.hash +
-                  rule.attributes.hash + rule.role.hash
-            end +
-              @users.inject(0) {|memo, user| memo + user.role_symbols.hash } +
-              @engine.privileges.hash + @engine.privilege_hierarchy.hash +
-              @engine.roles.hash + @engine.role_hierarchy.hash
+          @state_hash ||= @engine.auth_rules.inject(0) { |memo, rule|
+            memo + rule.privileges.hash + rule.contexts.hash + rule.attributes.hash + rule.role.hash
+          }
+            .merge(@users.inject(0) { |memo, user| memo + user.role_symbols.hash })
+            .merge(@engine.privileges.hash)
+            .merge(@engine.privilege_hierarchy.hash)
+            .merge(@engine.roles.hash)
+            .merge(@engine.role_hierarchy.hash)
         end
 
         def sort_value
@@ -211,15 +218,12 @@ module Authorization
         end
 
         def similar_to(other)
-          other.weight == weight and
-              other.changes.map {|change| change.class.name}.sort ==
-                changes.map {|change| change.class.name}.sort
+          other.weight == weight &&
+            other.changes.map { |change| change.class.name }.sort == changes.map { |change| change.class.name }.sort
         end
 
         def inspect
-          "Approach: Steps: #{changes.map(&:inspect) * ', '}"# +
-             # "\n  Roles: #{AnalyzerEngine.roles(@engine).map(&:to_sym).inspect}; " +
-             # "\n  Users: #{@users.map(&:role_symbols).inspect}"
+          "Approach: Steps: #{changes.map(&:inspect) * ', '}"
         end
 
         def <=>(other)
@@ -243,7 +247,7 @@ module Authorization
         end
 
         def eql?(other)
-          other.class == self.class and hash == other.hash
+          other.class == self.class && hash == other.hash
         end
 
         def hash
@@ -255,7 +259,7 @@ module Authorization
         end
 
         def inspect
-          "#{self.class.name.demodulize} #{hash} #{to_a.hash} (#{to_a[1..-1].collect {|info| self.class.readable_info(info)} * ','})"
+          "#{self.class.name.demodulize} #{hash} #{to_a.hash} (#{to_a[1..-1].collect { |info| self.class.readable_info(info) } * ','})"
         end
 
         def to_a
@@ -264,11 +268,11 @@ module Authorization
 
         def resembles?(spec)
           min_length = [spec.length, to_a.length].min
-          to_a[0,min_length] == spec[0,min_length]
+          to_a[0, min_length] == spec[0, min_length]
         end
 
         def resembles_any?(specs)
-          specs.any? {|spec| resembles?(spec) }
+          specs.any? { |spec| resembles?(spec) }
         end
 
         def self.readable_info(info)
@@ -286,46 +290,52 @@ module Authorization
         end
 
         def apply(candidate)
-          @actions.all? {|action| action.apply(candidate)}
+          @actions.all? { |action| action.apply(candidate) }
         end
 
         def reverse?(other)
-          @actions.any? {|action| action.reverse?(other)}
+          @actions.any? { |action| action.reverse?(other) }
         end
 
         def to_a
-          @actions.inject([]) {|memo, action| memo += action.to_a.first.is_a?(Enumerable) ? action.to_a : [action.to_a]; memo }
+          @actions.inject([]) do |memo, action|
+            memo += action.to_a.first.is_a?(Enumerable) ? action.to_a : [action.to_a]
+            memo
+          end
         end
 
         def hash
-          @hash ||= @actions.inject(0) {|memo, action| memo += action.hash }
+          @hash ||= @actions.inject(0) { |memo, action| memo += action.hash }
         end
 
         def resembles?(spec)
-          @actions.any? {|action| action.resembles?(spec) } or
+          @actions.any? { |action| action.resembles?(spec) } ||
             to_a.any? do |array|
               min_length = [spec.length, array.length].min
-              array[0,min_length] == spec[0,min_length]
+              array[0, min_length] == spec[0, min_length]
             end
         end
       end
 
       class AssignPrivilegeToRoleAction < AbstractAction
         def self.specific_actions(candidate)
-          privilege = AnalyzerEngine::Privilege.for_sym(
-              candidate.failed_tests.first.privilege, candidate.engine)
+          privilege = AnalyzerEngine::Privilege.for_sym(candidate.failed_tests.first.privilege, candidate.engine)
           context = candidate.failed_tests.first.context
           user = candidate.failed_tests.first.user
-          ([privilege] + privilege.ancestors).collect do |ancestor_privilege|
-            user.role_symbols.collect {|role_sym| AnalyzerEngine::Role.for_sym(role_sym, candidate.engine) }.
-                collect {|role| [role] + role.ancestors}.flatten.uniq.collect do |role|
+          ([privilege] + privilege.ancestors).flat_map do |ancestor_privilege|
+            user.role_symbols
+              .map { |role_sym| AnalyzerEngine::Role.for_sym(role_sym, candidate.engine) }
+              .flat_map { |role| [role] + role.ancestors }
+              .uniq
+              .map { |role|
               # apply checks later if privilege is already present in that role
               new(ancestor_privilege.to_sym, context, role.to_sym)
-            end
-          end.flatten
+            }
+          end
         end
 
         attr_reader :privilege, :context, :role
+
         def initialize(privilege_sym, context, role_sym)
           @privilege, @context, @role = privilege_sym, context, role_sym
         end
@@ -335,10 +345,7 @@ module Authorization
         end
 
         def reverse?(other)
-          other.is_a?(RemovePrivilegeFromRoleAction) and
-              other.privilege == @privilege and
-              other.context == @context and
-              other.role == @role
+          other.is_a?(RemovePrivilegeFromRoleAction) && other.privilege == @privilege && other.context == @context && other.role == @role
         end
 
         def to_a
@@ -357,58 +364,59 @@ module Authorization
         end
 
         attr_reader :user, :role
+
         def initialize(user, role_sym)
           @user, @role = user, role_sym
         end
 
         def apply(candidate)
-          if candidate.engine.roles_with_hierarchy_for(@user).include?(@role)
+          if candidate.engine.roles_with_hierarchy_for(user).include?(role)
             false
           else
             # beware of shallow copies!
-            cloned_user = @user.clone
-            user_index = candidate.users.index(@user)
+            cloned_user = user.clone
+            user_index = candidate.users.index(user)
             raise "Cannot find #{@user.inspect} in users array" unless user_index
             candidate.users[user_index] = cloned_user
             # possible on real user objects?
-            cloned_user.role_symbols << @role
-            raise "User#role_symbols immutable or user only shallowly cloned!" if cloned_user.role_symbols == @user.role_symbols
+            cloned_user.role_symbols << role
+            if cloned_user.role_symbols == user.role_symbols
+              raise "User#role_symbols immutable or user only shallowly cloned!"
+            end
             true
           end
         end
 
         def hash
-          to_a[0,2].hash + @user.login.hash
+          to_a[0, 2].hash + user.login.hash
         end
 
         def reverse?(other)
-          other.is_a?(RemoveRoleFromUserAction) and
-              other.user.login == @user.login and
-              other.role == @role
+          other.is_a?(RemoveRoleFromUserAction) && other.user.login == user.login && other.role == role
         end
 
         def resembles?(spec)
-          super(spec[0,2]) and (spec.length == 2 or spec[2] == @user.login)
+          super(spec[0, 2]) && (spec.length == 2 || spec[2] == user.login)
         end
 
         def to_a
-          [:assign_role_to_user, @role, @user]
+          [:assign_role_to_user, role, user]
         end
       end
 
       class CreateAndAssignRoleToUserAction < AbstractCompoundAction
         def self.specific_actions(candidate)
-          privilege = AnalyzerEngine::Privilege.for_sym(
-              candidate.failed_tests.first.privilege, candidate.engine)
+          privilege = AnalyzerEngine::Privilege.for_sym(candidate.failed_tests.first.privilege, candidate.engine)
           context = candidate.failed_tests.first.context
           user = candidate.failed_tests.first.user
           role = AnalyzerEngine::Role.for_sym(:change_supporter_new_role, candidate.engine)
-          ([privilege] + privilege.ancestors).collect do |ancestor_privilege|
+          ([privilege] + privilege.ancestors).map do |ancestor_privilege|
             new(user, ancestor_privilege.to_sym, context, role.to_sym)
           end
         end
 
         attr_reader :user, :privilege, :context, :role
+
         def initialize(user, privilege_sym, context_sym, role_sym)
           @user, @privilege, @context, @role = user, privilege_sym, context_sym, role_sym
           @actions = [AddPrivilegeAndAssignRoleToUserAction.new(@user, @privilege, @context, role_sym)]
@@ -433,18 +441,18 @@ module Authorization
 
       class AddPrivilegeAndAssignRoleToUserAction < AbstractCompoundAction
         def self.specific_actions(candidate)
-          privilege = AnalyzerEngine::Privilege.for_sym(
-              candidate.failed_tests.first.privilege, candidate.engine)
+          privilege = AnalyzerEngine::Privilege.for_sym(candidate.failed_tests.first.privilege, candidate.engine)
           context = candidate.failed_tests.first.context
           user = candidate.failed_tests.first.user
-          ([privilege] + privilege.ancestors).collect do |ancestor_privilege|
-            AnalyzerEngine::Role.all(candidate.engine).collect do |role|
+          ([privilege] + privilege.ancestors).flat_map do |ancestor_privilege|
+            AnalyzerEngine::Role.all(candidate.engine).map do |role|
               new(user, ancestor_privilege.to_sym, context, role.to_sym)
             end
-          end.flatten
+          end
         end
 
         attr_reader :user, :privilege, :context, :role
+
         def initialize(user, privilege_sym, context, role_sym)
           @user, @privilege, @context, @role = user, privilege_sym, context, role_sym
           @actions = [
@@ -456,19 +464,20 @@ module Authorization
 
       class RemovePrivilegeFromRoleAction < AbstractAction
         def self.specific_actions(candidate)
-          privilege = AnalyzerEngine::Privilege.for_sym(
-              candidate.failed_tests.first.privilege, candidate.engine)
+          privilege = AnalyzerEngine::Privilege.for_sym(candidate.failed_tests.first.privilege, candidate.engine)
           context = candidate.failed_tests.first.context
           user = candidate.failed_tests.first.user
-          ([privilege] + privilege.ancestors).collect do |ancestor_privilege|
-            user.role_symbols.collect {|role_sym| AnalyzerEngine::Role.for_sym(role_sym, candidate.engine) }.
-                collect {|role| [role] + role.ancestors}.flatten.uniq.collect do |role|
-              new(ancestor_privilege.to_sym, context, role.to_sym)
-            end
-          end.flatten
+          ([privilege] + privilege.ancestors).flat_map do |ancestor_privilege|
+            user.role_symbols
+              .map { |role_sym| AnalyzerEngine::Role.for_sym(role_sym, candidate.engine) }
+              .flat_map { |role| [role] + role.ancestors }
+              .uniq
+              .map { |role| new(ancestor_privilege.to_sym, context, role.to_sym) }
+          end
         end
 
         attr_reader :privilege, :context, :role
+
         def initialize(privilege_sym, context, role_sym)
           @privilege, @context, @role = privilege_sym, context, role_sym
         end
@@ -476,11 +485,9 @@ module Authorization
         def apply(candidate)
           AnalyzerEngine.apply_change(candidate.engine, to_a)
         end
-        
+
         def reverse?(other)
-          (other.is_a?(AssignPrivilegeToRoleAction) or
-              other.is_a?(AbstractCompoundAction)) and
-                other.reverse?(self)
+          (other.is_a?(AssignPrivilegeToRoleAction) || other.is_a?(AbstractCompoundAction)) && other.reverse?(self)
         end
 
         def to_a
@@ -494,14 +501,13 @@ module Authorization
           context = candidate.failed_tests.first.context
           user = candidate.failed_tests.first.user
           roles_for_privilege = AnalyzerEngine::Role.all_for_privilege(privilege, context, candidate.engine).map(&:to_sym)
-          user.role_symbols.collect {|role_sym| AnalyzerEngine::Role.for_sym(role_sym, candidate.engine)}.
-              select {|role| roles_for_privilege.include?(role.to_sym)}.
-              collect do |role|
-            new(user, role.to_sym)
-          end
+          user.role_symbols.map { |role_sym| AnalyzerEngine::Role.for_sym(role_sym, candidate.engine) }
+            .select { |role| roles_for_privilege.include?(role.to_sym) }
+            .map { |role| new(user, role.to_sym) }
         end
 
         attr_reader :user, :role
+
         def initialize(user, role_sym)
           @user, @role = user, role_sym
         end
@@ -513,22 +519,22 @@ module Authorization
           raise "Cannot find #{@user.inspect} in users array" unless user_index
           candidate.users[user_index] = cloned_user
           cloned_user.role_symbols.delete(@role)
-          raise "User#role_symbols immutable or user only shallowly cloned!" if cloned_user.role_symbols == @user.role_symbols
+          if cloned_user.role_symbols == @user.role_symbols
+            raise "User#role_symbols immutable or user only shallowly cloned!"
+          end
           true
         end
 
         def hash
-          to_a[0,2].hash + @user.login.hash
+          to_a[0, 2].hash + @user.login.hash
         end
 
         def reverse?(other)
-          (other.is_a?(AssignRoleToUserAction) or
-              other.is_a?(AbstractCompoundAction)) and
-                other.reverse?(self)
+          (other.is_a?(AssignRoleToUserAction) || other.is_a?(AbstractCompoundAction)) && other.reverse?(self)
         end
 
         def resembles?(spec)
-          super(spec[0,2]) and (spec.length == 2 or spec[2] == @user.login)
+          super(spec[0, 2]) && (spec.length == 2 || spec[2] == @user.login)
         end
 
         def to_a
@@ -537,6 +543,7 @@ module Authorization
       end
 
       protected
+
       def next_step(viable_approaches, candidates, approach_checker)
         candidate = candidates.shift
 
@@ -553,9 +560,7 @@ module Authorization
         abstract_actions.each do |abstract_action|
           abstract_action.specific_actions(candidate).each do |specific_action|
             child_candidate = candidate.dup
-            if !specific_action.resembles_any?(@prohibited_actions) and
-                  !child_candidate.reverse_of_previous?(specific_action) and
-                  child_candidate.apply(specific_action)
+            if !specific_action.resembles_any?(@prohibited_actions) && !child_candidate.reverse_of_previous?(specific_action) && child_candidate.apply(specific_action)
               child_candidates << child_candidate
             end
           end
@@ -580,7 +585,7 @@ module Authorization
 
       def superset_of_existing?(candidate)
         candidate.changes.any? do |action|
-          (@approaches_by_actions[action] ||= []).any? {|approach| approach.subset?(candidate)}
+          (@approaches_by_actions[action] ||= []).any? { |approach| approach.subset?(candidate) }
         end
       end
 
@@ -610,6 +615,7 @@ module Authorization
       def relevant_roles(approach)
         self.class.relevant_roles(approach)
       end
+
       def self.relevant_roles(approach)
         (AnalyzerEngine.relevant_roles(approach.engine, approach.users) +
             (approach.engine.roles.include?(:new_role_for_change_analyzer) ? [AnalyzerEngine::Role.for_sym(:new_role_for_change_analyzer, approach.engine)] : [])).uniq

@@ -2,7 +2,6 @@ require 'minitest/assertions'
 
 module Minitest
   module Assertions
-
     # test/unit backwards compatibility methods
     alias :assert_raise :assert_raises
     alias :assert_not_empty :refute_empty
@@ -19,9 +18,8 @@ module Minitest
     alias :assert_not_respond_to :refute_respond_to
     alias :assert_not_same :refute_same
 
-  def assert_nothing_raised(*)
-    yield
-  end
-
+    def assert_nothing_raised(*)
+      yield
+    end
   end
 end

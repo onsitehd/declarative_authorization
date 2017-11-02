@@ -1,7 +1,6 @@
 require 'rails/generators'
 module Authorization
   class InstallGenerator < Rails::Generators::Base
-    
     include Rails::Generators::Migration
     source_root File.expand_path('../templates', __FILE__)
 
@@ -11,7 +10,7 @@ module Authorization
     class_option :commit, type: :boolean, default: false, desc: "Performs rake tasks such as migrate and seed."
     class_option :user_belongs_to_role, type: :boolean, default: false, desc: "Users have only one role, which can inherit others roles."
 
-    def self.next_migration_number dirname
+    def self.next_migration_number(dirname)
       if ActiveRecord::Base.timestamped_migrations
         Time.now.utc.strftime("%Y%m%d%H%M%S")
       else
@@ -20,8 +19,18 @@ module Authorization
     end
 
     def install_decl_auth
-      habtm_table_name  = "#{name.pluralize}" <= "Roles" ? "#{name.pluralize}Roles" : "Roles#{name.pluralize}" unless options[:user_belongs_to_role]
-      habtm_file_glob  = "#{name.pluralize}" <= "Roles" ? 'db/migrate/*create_*_roles*' : 'db/migrate/*create_roles_*' unless options[:user_belongs_to_role]
+      unless options[:user_belongs_to_role]
+        habtm_table_name = if name.pluralize <= "Roles"
+                             "#{name.pluralize}Roles"
+                           else
+                             "Roles#{name.pluralize}"
+                           end
+        habtm_file_glob = if name.pluralize <= "Roles"
+                            'db/migrate/*create_*_roles*'
+                          else
+                            'db/migrate/*create_roles_*'
+                          end
+      end
 
       generate 'model', "#{name} #{attributes.join(' ')}" if options[:create_user]
       generate 'model', 'Role title:string'
@@ -40,32 +49,30 @@ module Authorization
       rake 'db:migrate' if options[:commit]
 
       if options[:user_belongs_to_role]
-        inject_into_file "app/models/#{name.singularize.downcase}.rb", before: "\nend" do <<-'RUBY'
-
-
+        inject_into_file "app/models/#{name.singularize.downcase}.rb", before: "\nend" do
+          <<-'RUBY'
   def role_symbols
     [role.title.to_sym]
   end
-        RUBY
+          RUBY
         end
       else
-        inject_into_file "app/models/#{name.singularize.downcase}.rb", before: "\nend" do <<-'RUBY'
-
-
+        inject_into_file "app/models/#{name.singularize.downcase}.rb", before: "\nend" do
+          <<-'RUBY'
   def role_symbols
     (roles || []).map {|r| r.title.to_sym}
   end
-        RUBY
+          RUBY
         end
       end
 
-      inject_into_file 'db/seeds.rb', after: ".first)\n" do <<-'RUBY'
-
+      inject_into_file 'db/seeds.rb', after: ".first)\n" do
+        <<-'RUBY'
 roles = Role.create([
   {title: 'admin'},
   {title: 'user'}
 ]) if Role.count == 0
-RUBY
+        RUBY
       end
 
       rake 'db:seed' if options[:commit]
