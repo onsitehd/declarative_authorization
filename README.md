@@ -1,5 +1,7 @@
 # Declarative Authorization
 
+[![Build Status](https://travis-ci.org/breckenedge/declarative_authorization.svg?branch=master)](https://travis-ci.org/breckenedge/declarative_authorization)
+
 The declarative authorization plugin offers an authorization mechanism
 inspired by *RBAC*. The most notable distinction to other authorization
 plugins is the declarative approach. That is, authorization rules are not
