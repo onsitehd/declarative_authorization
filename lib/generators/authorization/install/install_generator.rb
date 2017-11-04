@@ -36,14 +36,14 @@ module Authorization
       generate 'model', 'Role title:string --no-fixture'
 
       if options[:user_belongs_to_role]
-        inject_into_file "app/models/#{name.singularize.downcase}.rb", "  belongs_to :role\n", after: "ActiveRecord::Base\n"
+        inject_into_file "app/models/#{name.singularize.downcase}.rb", "  belongs_to :role\n\n", after: "ApplicationRecord\n"
         generate 'migration', "AddRoleIdTo#{name.camelcase} role_id:integer"
       else
         generate 'migration', "Create#{habtm_table_name} #{name.downcase}:integer role:integer"
         gsub_file Dir.glob(habtm_file_glob).last, 'integer', 'references'
         inject_into_file Dir.glob(habtm_file_glob).last, ", id: false", before: ' do |t|'
-        inject_into_file "app/models/role.rb", "  has_and_belongs_to_many :#{name.downcase.pluralize}\n", after: "ActiveRecord::Base\n"
-        inject_into_file "app/models/#{name.singularize.downcase}.rb", "  has_and_belongs_to_many :roles\n", after: "ActiveRecord::Base\n"
+        inject_into_file "app/models/role.rb", "  has_and_belongs_to_many :#{name.downcase.pluralize}\n\n  validates :title, presence: true, uniqueness: true\n", after: "ApplicationRecord\n"
+        inject_into_file "app/models/#{name.singularize.downcase}.rb", "  has_and_belongs_to_many :roles\n\n", after: "ApplicationRecord\n"
       end
 
       rake 'db:migrate' if options[:commit]
@@ -62,7 +62,7 @@ module Authorization
           <<-'RUBY'
 
   def role_symbols
-    (roles || []).map {|r| r.title.to_sym}
+    roles.map(&:title).map(&:to_sym)
   end
           RUBY
         end
