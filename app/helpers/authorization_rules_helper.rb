@@ -150,8 +150,12 @@ module AuthorizationRulesHelper
       "Remove role <strong>#{h human_role(step[1].to_sym)}</strong>#{dont_remove} from <strong>#{h readable_step_info(step[2])}</strong>"
     else
       step.collect { |info| readable_step_info(info) }.map { |str| h str } * ', '
-    end + prohibit_link(step, options[:with_removal] ? escape_javascript(describe_step(step)).to_s : '',
-                        "Don't suggest this action.", options)
+    end + prohibit_link(
+      step,
+      options[:with_removal] ? escape_javascript(describe_step(step)).to_s : '',
+      "Don't suggest this action.",
+      options
+    )
   end
 
   def prohibit_link(step, text, title, options)

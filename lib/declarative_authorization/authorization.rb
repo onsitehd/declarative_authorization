@@ -182,10 +182,10 @@ module Authorization
 
       if options[:bang]
         if rules.empty?
-          raise NotAuthorized,
-            "No matching rules found for #{privilege} for #{user.inspect} " \
-            "(roles #{roles.inspect}, privileges #{privileges.inspect}, " \
-            "context #{options[:context].inspect})."
+          raise(NotAuthorized,
+                "No matching rules found for #{privilege} for #{user.inspect} " \
+                "(roles #{roles.inspect}, privileges #{privileges.inspect}, " \
+                "context #{options[:context].inspect}).")
         else
           raise AttributeAuthorizationError, "#{privilege} not allowed for #{user.inspect} on #{(options[:object] || options[:context]).inspect}."
         end
@@ -266,9 +266,9 @@ module Authorization
       roles = user.respond_to?(:role_symbols) ? user.role_symbols : user.roles
 
       if !roles.is_a?(Array) || (!roles.empty? && !roles[0].is_a?(Symbol))
-        raise AuthorizationUsageError,
-          "User.#{user.respond_to?(:role_symbols) ? 'role_symbols' : 'roles'} " \
-          "doesn't return an Array of Symbols (#{roles.inspect})"
+        raise(AuthorizationUsageError,
+              "User.#{user.respond_to?(:role_symbols) ? 'role_symbols' : 'roles'} " \
+              "doesn't return an Array of Symbols (#{roles.inspect})")
       end
 
       (roles.empty? ? [Authorization.default_role] : roles)
@@ -330,8 +330,7 @@ module Authorization
       privileges = privilege.is_a?(Array) ? privilege : [privilege]
 
       unless user
-        raise AuthorizationUsageError,
-          "No user object given (#{user.inspect}) or set through Authorization.current_user"
+        raise(AuthorizationUsageError, "No user object given (#{user.inspect}) or set through Authorization.current_user")
       end
 
       roles = options[:user_roles] || flatten_roles(roles_for(user))
@@ -552,46 +551,46 @@ module Authorization
             begin
               attr_value.include?(evaluated)
             rescue NoMethodError => e
-              raise AuthorizationUsageError,
-                "Operator contains requires a " \
-                "subclass of Enumerable as attribute value, got: #{attr_value.inspect} " \
-                "contains #{evaluated.inspect}: #{e}"
+              raise(AuthorizationUsageError,
+                    "Operator contains requires a " \
+                    "subclass of Enumerable as attribute value, got: #{attr_value.inspect} " \
+                    "contains #{evaluated.inspect}: #{e}")
             end
           when :does_not_contain
             begin
               !attr_value.include?(evaluated)
             rescue NoMethodError => e
-              raise AuthorizationUsageError,
-                "Operator does_not_contain requires a " \
-                "subclass of Enumerable as attribute value, got: #{attr_value.inspect} " \
-                "does_not_contain #{evaluated.inspect}: #{e}"
+              raise(AuthorizationUsageError,
+                    "Operator does_not_contain requires a " \
+                    "subclass of Enumerable as attribute value, got: #{attr_value.inspect} " \
+                    "does_not_contain #{evaluated.inspect}: #{e}")
             end
           when :intersects_with
             begin
               !(evaluated.to_set & attr_value.to_set).empty?
             rescue NoMethodError => e
-              raise AuthorizationUsageError,
-                "Operator intersects_with requires " \
-                "subclasses of Enumerable, got: #{attr_value.inspect} " \
-                "intersects_with #{evaluated.inspect}: #{e}"
+              raise(AuthorizationUsageError,
+                    "Operator intersects_with requires " \
+                    "subclasses of Enumerable, got: #{attr_value.inspect} " \
+                    "intersects_with #{evaluated.inspect}: #{e}")
             end
           when :is_in
             begin
               evaluated.include?(attr_value)
             rescue NoMethodError => e
-              raise AuthorizationUsageError,
-                "Operator is_in requires a " \
-                "subclass of Enumerable as value, got: #{attr_value.inspect} " \
-                "is_in #{evaluated.inspect}: #{e}"
+              raise(AuthorizationUsageError,
+                    "Operator is_in requires a " \
+                    "subclass of Enumerable as value, got: #{attr_value.inspect} " \
+                    "is_in #{evaluated.inspect}: #{e}")
             end
           when :is_not_in
             begin
               !evaluated.include?(attr_value)
             rescue NoMethodError => e
-              raise AuthorizationUsageError,
-                "Operator is_not_in requires a " \
-                "subclass of Enumerable as value, got: #{attr_value.inspect} " \
-                "is_not_in #{evaluated.inspect}: #{e}"
+              raise(AuthorizationUsageError,
+                    "Operator is_not_in requires a " \
+                    "subclass of Enumerable as value, got: #{attr_value.inspect} " \
+                    "is_not_in #{evaluated.inspect}: #{e}")
             end
           when :lt
             attr_value && attr_value < evaluated
@@ -645,10 +644,10 @@ module Authorization
     def object_attribute_value(object, attr)
       object.send(attr)
     rescue ArgumentError, NoMethodError => e
-      raise AuthorizationUsageError,
-        "Error occurred while validating attribute ##{attr} on #{object.inspect}: #{e}. " \
-        "Please check your authorization rules and ensure the attribute is correctly spelled and " \
-        "corresponds to a method on the model you are authorizing for."
+      raise(AuthorizationUsageError,
+            "Error occurred while validating attribute ##{attr} on #{object.inspect}: #{e}. " \
+            "Please check your authorization rules and ensure the attribute is correctly spelled and " \
+            "corresponds to a method on the model you are authorizing for.")
     end
 
     def deep_hash_clone(hash)

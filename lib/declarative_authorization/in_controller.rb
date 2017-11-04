@@ -318,13 +318,16 @@ module Authorization
         filter_access_permissions.each do |perm|
           perm.remove_actions(actions)
         end
-        filter_access_permissions <<
-          ControllerPermission.new(actions, privilege, context,
-                                   options[:strong_parameters],
-                                   options[:attribute_check],
-                                   options[:model],
-                                   options[:load_method],
-                                   filter_block)
+        filter_access_permissions << ControllerPermission.new(
+          actions,
+          privilege,
+          context,
+          options[:strong_parameters],
+          options[:attribute_check],
+          options[:model],
+          options[:load_method],
+          filter_block
+        )
       end
 
       # Collecting all the ControllerPermission objects from the controller

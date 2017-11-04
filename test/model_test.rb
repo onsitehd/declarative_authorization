@@ -725,8 +725,7 @@ class NamedScopeModelTest < Test::Unit::TestCase
     test_model_1.test_attrs.create!
     test_model_2.test_attrs.create!
 
-    user = MockUser.new(:test_role,
-                        :id => test_model_1.test_attrs.first.id)
+    user = MockUser.new(:test_role, :id => test_model_1.test_attrs.first.id)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).where(:id => test_model_1.id).length
 
@@ -752,8 +751,7 @@ class NamedScopeModelTest < Test::Unit::TestCase
     test_model_1.test_attrs.create!
     test_model_2.test_attrs.create!
 
-    user = MockUser.new(:test_role,
-                        :id => test_model_1.test_attrs.first.id)
+    user = MockUser.new(:test_role, :id => test_model_1.test_attrs.first.id)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
 
     TestModel.delete_all
@@ -780,11 +778,9 @@ class NamedScopeModelTest < Test::Unit::TestCase
     test_model_2.test_attrs_with_attr.create!
     test_model_2.test_attrs.create!(:attr => 2)
 
-    user = MockUser.new(:test_role,
-                        :id => test_model_1.test_attrs.first.id)
+    user = MockUser.new(:test_role, :id => test_model_1.test_attrs.first.id)
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
-    user = MockUser.new(:test_role,
-                        :id => test_model_1.test_attrs.last.id)
+    user = MockUser.new(:test_role, :id => test_model_1.test_attrs.last.id)
     assert_equal 0, TestModel.with_permissions_to(:read, :user => user).length
 
     TestModel.delete_all
@@ -811,12 +807,10 @@ class NamedScopeModelTest < Test::Unit::TestCase
     test_model_1.test_attrs.create!
     test_model_2.test_attrs.create!
 
-    user = MockUser.new(:test_role,
-                        :test_attrs => [test_model_1.test_attrs.first, TestAttr.create!])
+    user = MockUser.new(:test_role, :test_attrs => [test_model_1.test_attrs.first, TestAttr.create!])
     assert_equal 1, TestModel.with_permissions_to(:read, :user => user).length
 
-    user = MockUser.new(:test_role,
-                        :test_attrs => [TestAttr.create!])
+    user = MockUser.new(:test_role, :test_attrs => [TestAttr.create!])
     assert_equal 0, TestModel.with_permissions_to(:read, :user => user).length
 
     TestModel.delete_all
