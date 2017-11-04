@@ -25,7 +25,7 @@ namespace :auth do
     end
 
     model_all = `grep -l "Base\.using_access_control" #{Rails.root}/config/*.rb #{Rails.root}/config/initializers/*.rb`.split("\n")
-    if model_all.count > 0
+    if model_all.count.positive?
       model_files = Dir.glob("#{Rails.root}/app/models/*.rb").reject do |item|
         item.match(/_observer\.rb/)
       end
