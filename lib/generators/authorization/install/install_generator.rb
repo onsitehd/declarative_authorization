@@ -33,7 +33,7 @@ module Authorization
       end
 
       generate 'model', "#{name} #{attributes.join(' ')}" if options[:create_user]
-      generate 'model', 'Role title:string'
+      generate 'model', 'Role title:string --no-fixture'
 
       if options[:user_belongs_to_role]
         inject_into_file "app/models/#{name.singularize.downcase}.rb", "  belongs_to :role\n", after: "ActiveRecord::Base\n"
@@ -51,6 +51,7 @@ module Authorization
       if options[:user_belongs_to_role]
         inject_into_file "app/models/#{name.singularize.downcase}.rb", before: "\nend" do
           <<-'RUBY'
+
   def role_symbols
     [role.title.to_sym]
   end
@@ -59,6 +60,7 @@ module Authorization
       else
         inject_into_file "app/models/#{name.singularize.downcase}.rb", before: "\nend" do
           <<-'RUBY'
+
   def role_symbols
     (roles || []).map {|r| r.title.to_sym}
   end
@@ -68,12 +70,20 @@ module Authorization
 
       inject_into_file 'db/seeds.rb', after: ".first)\n" do
         <<~'RUBY'
-          roles = Role.create([
-            {title: 'admin'},
-            {title: 'user'}
-          ]) if Role.count == 0
+
+          %i(admin user).each do |title|
+            Role.find_or_create_by(title: title)
+          end
         RUBY
       end
+
+      create_file 'test/fixtures/roles.yaml', <<~RUBY
+        admin:
+          title: admin
+
+        user:
+          title: user
+      RUBY
 
       rake 'db:seed' if options[:commit]
 
