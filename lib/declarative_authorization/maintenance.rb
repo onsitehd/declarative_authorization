@@ -109,7 +109,7 @@ module Authorization
   # Defines get_with, post_with, get_by_xhr_with etc. for methods
   # get, post, put, delete each with the signature
   #
-  #   get_with(user, action, params = {}, session = {}, flash = {})
+  #   get_with(user, action, params: {}, session: {}, flash: {})
   #
   # Use it by including it in your TestHelper:
   #
@@ -173,7 +173,7 @@ module Authorization
       end
     end
 
-    # See should_be_allowed_to
+    # @see DeclarativeAuthorization::TestHelper#should_be_allowed_to
     def should_not_be_allowed_to(privilege, *args)
       options = {}
       if args.first.class == Hash
@@ -184,29 +184,47 @@ module Authorization
       assert !Authorization::Engine.instance.permit?(privilege, options)
     end
 
-    def request_with(user, method, xhr, action, params = {}, session = {}, flash = {})
+    def request_with(user, method, xhr, action, params: {}, session: {}, flash: {})
       session = session.merge(:user => user, :user_id => user && user.id)
       with_user(user) do
         if xhr
-          xhr method, action, params, session, flash
+          xhr method, action, params: params, session: session, flash: flash
         else
-          send method, action, params, session, flash
+          public_send method, action, params: params, session: session, flash: flash
         end
       end
     end
 
-    def self.included(base)
-      [:get, :post, :put, :delete].each do |method|
-        base.class_eval <<-EOV, __FILE__, __LINE__
-          def #{method}_with(user, *args)
-            request_with(user, #{method.inspect}, false, *args)
-          end
+    def get_with(user, *args)
+      request_with(user, :get, false, *args)
+    end
 
-          def #{method}_by_xhr_with(user, *args)
-            request_with(user, #{method.inspect}, true, *args)
-          end
-        EOV
-      end
+    def get_by_xhr_with(user, *args)
+      request_with(user, :get, true, *args)
+    end
+
+    def post_with(user, *args)
+      request_with(user, :post, false, *args)
+    end
+
+    def post_by_xhr_with(user, *args)
+      request_with(user, :post, true, *args)
+    end
+
+    def put_with(user, *args)
+      request_with(user, :post, false, *args)
+    end
+
+    def put_by_xhr_with(user, *args)
+      request_with(user, :post, true, *args)
+    end
+
+    def delete_with(user, *args)
+      request_with(user, :post, false, *args)
+    end
+
+    def delete_by_xhr_with(user, *args)
+      request_with(user, :post, true, *args)
     end
   end
 end
