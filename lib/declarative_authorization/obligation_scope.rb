@@ -49,10 +49,14 @@ module Authorization
         super(model, options)
       elsif Rails.version < "5"
         super(model, model.table_name)
-      else
+      elsif Rails.version < "5.2"
         table_metadata = ActiveRecord::TableMetadata.new(model, model.arel_table)
         predicate_builder = ActiveRecord::PredicateBuilder.new(table_metadata)
         super(model, model.table_name, predicate_builder)
+      else
+        table_metadata = ActiveRecord::TableMetadata.new(model, model.arel_table)
+        predicate_builder = ActiveRecord::PredicateBuilder.new(table_metadata)
+        super(model, table: model.arel_table, predicate_builder: predicate_builder)
       end
     end
 
