@@ -8,9 +8,7 @@ Gem::Specification.new do |s|
   s.authors = ["Steffen Bartsch"]
   s.summary = "declarative_authorization is a Rails plugin for maintainable authorization based on readable authorization rules."
   s.email = "sbartsch@tzi.org"
-  s.files = %w[CHANGELOG MIT-LICENSE README.rdoc Rakefile authorization_rules.dist.rb garlic_example.rb init.rb] + Dir["app/**/*.rb"] + Dir["app/**/*.erb"] + Dir["config/*"] + Dir["lib/*.rb"] + Dir["lib/**/*.rb"] + Dir["lib/tasks/*"] + Dir["test/*"]
-  s.has_rdoc = true
-  s.extra_rdoc_files = ['README.rdoc', 'CHANGELOG']
+  s.files = %w[CHANGELOG MIT-LICENSE Rakefile authorization_rules.dist.rb] + Dir["app/**/*.rb"] + Dir["app/**/*.erb"] + Dir["config/*"] + Dir["lib/*.rb"] + Dir["lib/**/*.rb"] + Dir["lib/tasks/*"] + Dir["test/*"]
   s.homepage = 'http://github.com/stffn/declarative_authorization'
   s.add_development_dependency('test-unit')
   s.add_development_dependency('ruby_parser', '~> 3.6.0')
