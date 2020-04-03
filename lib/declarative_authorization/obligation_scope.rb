@@ -47,7 +47,7 @@ module Authorization
       @finder_options = {}
       table_metadata = ActiveRecord::TableMetadata.new(model, model.arel_table)
       predicate_builder = ActiveRecord::PredicateBuilder.new(table_metadata)
-      super(model, model.table_name, predicate_builder)
+      super(model, table: model.table_name, predicate_builder: predicate_builder)
     end
 
     def scope
